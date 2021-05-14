@@ -2,7 +2,8 @@
 
 import sys
 import numpy
-import socketio
+import socket
+import json
 
 from _thread import start_new_thread
 
@@ -16,6 +17,20 @@ fallback = {
   "port": 25454
 }
 
+player_template = {
+  "ip": "0.0.0.0",
+  "id": 0,
+  "name": "Player",
+  "attr": {
+    "health": 100,
+    "position": {
+      "x": "0",
+      "y": "0",
+      "rot": "0",
+    }
+  }
+}
+
 try:
   s.bind(fallback.ip, fallback.port)
 except socket.error as e:
@@ -25,7 +40,9 @@ s.listen(30)
 print("Waiting for connection")
 
 currentId = 0
-pos = {}
+players = {
+
+}
 def threaded_client(conn):
     global currentId, pos
     conn.send(str.encode(currentId))
@@ -34,12 +51,16 @@ def threaded_client(conn):
         try:
             data = conn.recv(2048)
             reply = data.decode('utf-8')
-            if not data:
-                conn.send(str.encode("Goodbye"))
-                break
+            
+            if not data: 
+              # technically speaking if a socket 
+              # does not receive data it is considered dead
+              conn.send(str.encode("Goodbye"))
+              break
             else:
                 print("Recieved: " + reply)
-                arr = reply.split(":")
+                
+                
                 id = int(arr[0])
                 pos[id] = reply
 

@@ -60,10 +60,9 @@ def threaded_client(conn,id):
               # does not receive data it is considered dead
               conn.send(str.encode("Goodbye"))
               break
+            else:
+              reply = "hello"
             
-            
-
-
             conn.sendall(str.encode(reply))
         except:
             break

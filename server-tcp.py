@@ -18,7 +18,7 @@ fallback = {
 }
 
 try:
-  s.bind(fallback.ip, fallback.port)
+  s.bind(fallback["ip"], fallback["port"])
 except socket.error as e:
   print("Did not bind successfully: " + str(e))
 

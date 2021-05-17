@@ -5,7 +5,6 @@ import numpy
 import socket
 import json
 
-
 from _thread import start_new_thread
 
 
@@ -16,18 +15,6 @@ s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 fallback = {
   "ip": socket.gethostbyname(''),
   "port": 25454
-}
-
-player_template = {
-  "name": "Player",
-  "attr": {
-    "health": 100,
-    "position": {
-      "x": "0",
-      "y": "0",
-      "rot": "0",
-    }
-  }
 }
 
 try:
@@ -42,25 +29,41 @@ currentId = 0
 players = {
 
 }
-def threaded_client(conn):
-    global currentId, players
 
-    conn.send(str.encode(currentId))
+def broadcast(message):
+  for i in players:
+    i["socket"].send(str.encode(json.dumps(message)))
+
+
+
+def threaded_client(conn,id):
+    global players
+
+    print("recieving data from player")
+    reply = json.loads(conn.recv(2048).decode('utf-8'))
+
+    players[str(id)] = reply
+    players[str(id)]["socket"] = conn
+
+    def send(stuff):
+      return conn.send(str.encode(json.dumps(stuff)))
+
+    send(currentId)
     
     while True:
         try:
             data = conn.recv(2048)
-            reply = data.decode('utf-8')
+            reply = json.loads(data.decode('utf-8'))
             
             if not data: 
               # technically speaking if a socket 
               # does not receive data it is considered dead
               conn.send(str.encode("Goodbye"))
               break
-            else:
-                print("Recieved: " + reply)
-                
-                if 
+            
+            
+
+
             conn.sendall(str.encode(reply))
         except:
             break
@@ -68,8 +71,13 @@ def threaded_client(conn):
     print("Connection Closed")
     conn.close()
 
-while True:
+
+# keep accepting connections until the script
+# terminates or the max amount of players connected
+while True: 
     conn, addr = s.accept()
     print("Connected to: ", addr)
 
-    start_new_thread(threaded_client, (conn,))
+    currentId += 1
+
+    start_new_thread(threaded_client, (conn,currentId))

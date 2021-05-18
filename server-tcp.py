@@ -40,29 +40,29 @@ def threaded_client(conn,id):
     global players
 
     print("recieving data from player")
-    reply = json.loads(conn.recv(2048).decode('utf-8'))
+    reply = conn.recv(2048).decode('utf-8')
 
     players[str(id)] = reply
-    players[str(id)]["socket"] = conn
+    #players[str(id)]["socket"] = conn
 
     def send(stuff):
       return conn.send(str.encode(json.dumps(stuff)))
 
     send(currentId)
-    
+
     while True:
         try:
             data = conn.recv(2048)
-            reply = json.loads(data.decode('utf-8'))
-            
-            if not data: 
-              # technically speaking if a socket 
+            reply = data.decode('utf-8')
+
+            if not data:
+              # technically speaking if a socket
               # does not receive data it is considered dead
               conn.send(str.encode("Goodbye"))
               break
             else:
               reply = "hello"
-            
+
             conn.sendall(str.encode(reply))
         except:
             break
@@ -73,7 +73,7 @@ def threaded_client(conn,id):
 
 # keep accepting connections until the script
 # terminates or the max amount of players connected
-while True: 
+while True:
     conn, addr = s.accept()
     print("Connected to: ", addr)
 

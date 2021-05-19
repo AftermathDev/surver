@@ -4,6 +4,7 @@ import sys
 import numpy
 import socket
 import json
+from time import sleep
 
 from _thread import start_new_thread
 
@@ -14,13 +15,21 @@ s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 # in case the user did not supply any arguments
 fallback = {
   "ip": socket.gethostbyname(''),
-  "port": 25454
+  "port": 25453
 }
 
-try:
-  s.bind((fallback["ip"], fallback["port"]))
-except socket.error as e:
-  print("Did not bind successfully: " + str(e))
+not_connected = not False
+
+while not_connected == True:
+    try:
+      s.bind((fallback["ip"], fallback["port"]))
+      not_connected = False
+    except socket.error as e:
+      print("Did not bind successfully: " + str(e))
+      print("waiting 5 seconds before next attempt")
+      sleep(5)
+
+
 
 s.listen()
 print("Waiting for connection")
@@ -35,26 +44,24 @@ def broadcast(message):
     i["socket"].send(str.encode(json.dumps(message)))
 
 
-
+reply = ""
 def threaded_client(conn,id):
     global players
 
     print("recieving data from player")
-    reply = conn.recv(2048).decode('utf-8')
+    #reply = conn.recv(2048).decode('utf-8')
 
-    players[str(id)] = reply
+    #players[str(id)] = reply
     #players[str(id)]["socket"] = conn
 
-    def send(stuff):
-      return conn.send(str.encode(json.dumps(stuff)))
-
-    send(currentId)
+    conn.send(str.encode("hello"))
 
     while True:
         try:
             data = conn.recv(2048)
             reply = data.decode('utf-8')
 
+            print("got back " + reply)
             if not data:
               # technically speaking if a socket
               # does not receive data it is considered dead
@@ -63,8 +70,10 @@ def threaded_client(conn,id):
             else:
               reply = "hello"
 
+            print("sending " + reply)
             conn.sendall(str.encode(reply))
-        except:
+        except Exception as e:
+            print(e)
             break
 
     print("Connection Closed")

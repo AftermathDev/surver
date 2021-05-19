@@ -4,6 +4,8 @@ import sys
 import numpy
 import socket
 import json
+
+from OpenSSL import SSL as ssl # as much as i hate ssl i have to do this or else the web browser blocks any connections
 from time import sleep
 
 from _thread import start_new_thread
